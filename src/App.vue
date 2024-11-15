@@ -1,5 +1,6 @@
 <script setup>
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, reactive } from 'vue';
+import AlertaComp from './components/AlertaComp.vue';
 
 const monedas = ref([
     { codigo: 'USD', texto: 'Dolar de Estados Unidos' },
@@ -9,6 +10,12 @@ const monedas = ref([
 ])
 
 const criptomonedas = ref([])
+const error = ref('')
+
+const cotizar = reactive({
+    moneda: '',
+    criptomoneda: '',
+})
 
 onMounted(() => {
     const url = "https://min-api.cryptocompare.com/data/top/mktcapfull?limit=20&tsym=USD"
@@ -16,6 +23,22 @@ onMounted(() => {
         .then(response => response.json())
         .then(({ Data }) => criptomonedas.value = Data)
 })
+
+const cotizarCripto = () => {
+    if (Object.values(cotizar).includes('')) {
+        error.value = "Todos los campos son obligatorios"
+        return
+    }
+    error.value = ''
+    obtenerCotizacion()
+}
+
+const obtenerCotizacion = async () => {
+    const { moneda, criptomoneda } = cotizar
+    const url = `https://min-api.cryptocompare.com/data/pricemultifull?fsyms=${criptomoneda}&tsyms=${moneda}`
+
+    console.log(url)
+}
 </script>
 
 <template>
@@ -23,11 +46,12 @@ onMounted(() => {
         <h1 class="titulo">Cotizador de <span>Criptomonedas</span></h1>
 
         <div class="contenido">
-            <form class="formulario">
+            <AlertaComp v-if="error"> {{ error }}</AlertaComp>
+            <form class="formulario" @submit.prevent="cotizarCripto">
                 <!-- Moneda -->
                 <div class="campo">
                     <label for="moneda">Moneda:</label>
-                    <select id="moneda">
+                    <select id="moneda" v-model="cotizar.moneda">
                         <option value="">-- Selecione --</option>
                         <option v-for="moneda, idx in monedas" :key="idx" :value="moneda.codigo">{{ moneda.texto }}
                         </option>
@@ -36,7 +60,7 @@ onMounted(() => {
                 <!-- Criptomoneda -->
                 <div class="campo">
                     <label for="cripto">Criptomoneda:</label>
-                    <select id="cripto">
+                    <select id="cripto" v-model="cotizar.criptomoneda">
                         <option value="">-- Selecione --</option>
                         <option v-for="criptomoneda in criptomonedas" :value="criptomoneda.CoinInfo.Name">{{
                             criptomoneda.CoinInfo.FullName }}
