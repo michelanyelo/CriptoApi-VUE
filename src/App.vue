@@ -2,6 +2,10 @@
 import { onMounted, ref, reactive, computed } from 'vue';
 import AlertaComp from './components/AlertaComp.vue';
 import SpinnerComp from './components/SpinnerComp.vue';
+import useCripto from './composables/useCripto.js'
+
+const { cotizarMoneda } = useCripto()
+cotizarMoneda()
 
 const monedas = ref([
     { codigo: 'USD', texto: 'Dolar de Estados Unidos' },
